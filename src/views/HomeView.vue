@@ -13,12 +13,13 @@ onMounted(async () => {
 
 <template>
   <main>
-    <h1>Marathons</h1>
 
-    <ul>
-      <li v-for="marathon in marathons" :key="marathon.id">
-        {{ marathon.name }} - {{ marathon.location }} ({{ marathon.distance }} km)
-      </li>
-    </ul>
+  <div>
+    <h1>Home</h1>
+
+    <router-link to="/trainingplans">
+      <button>Go to Training Plans</button>
+    </router-link>
+  </div>
   </main>
 </template>

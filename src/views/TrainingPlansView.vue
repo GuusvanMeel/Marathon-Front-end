@@ -8,7 +8,7 @@
 
     <div v-if="plans.length" class="plans">
       <div v-for="plan in plans" :key="plan.id" class="plan-card">
-        <p1>marathon id: {{ plan.marathonId }}</p1>
+        <p1>marathon: {{ plan.marathonName }}</p1>
         <div class="plan-header">
           <span class="status" :class="plan.status">
             {{ plan.status }}
@@ -20,9 +20,10 @@
           <p><strong>End:</strong> {{ formatDate(plan.endDate) }}</p>
         </div>
         <div>
-          <h4>🏃 Training Items:</h4>
+
 
           <div v-if="plan.items?.length" class="items">
+            <h4>🏃 Training Items:</h4>
             <div v-for="item in plan.items" :key="item.id" class="item-card">
 
               <div class="item-header">
@@ -65,7 +66,7 @@ const plans = ref<any[]>([])
 // 🔹 DIT is je backend koppeling
 const fetchPlans = async () => {
   try {
-    const response = await fetch('http://localhost:8080/trainingplans/test')
+    const response = await fetch('http://localhost:8080/trainingplans', { method: "GET" })
 
     if (!response.ok) throw new Error('Network response was not ok')
 

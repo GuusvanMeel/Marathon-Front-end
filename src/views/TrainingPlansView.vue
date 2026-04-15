@@ -1,83 +1,93 @@
 <template>
-  <div class="dashboard">
-    <!-- Header Section -->
-    <header class="dashboard-header">
-      <div class="header-content">
-        <h1>🏃 Marathon <span class="highlight">Pro</span></h1>
+  <div class="dashboard-root">
+    <main class="container">
+      <!-- Action Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Your <span class="highlight">Training Plans</span></h1>
+          <p class="page-subtitle">Track your progress and upcoming milestones.</p>
+        </div>
         <button @click="fetchPlans" :disabled="loading" class="refresh-btn">
-          <span v-if="loading">⏳ Loading...</span>
-          <span v-else>🔄 Refresh Plans</span>
+          <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          <span v-else class="loader"></span>
+          {{ loading ? 'Updating...' : 'Refresh Data' }}
         </button>
       </div>
-    </header>
 
-    <main class="container">
       <!-- Empty State -->
       <div v-if="plans.length === 0 && !loading" class="empty-state">
-        <div class="icon">👟</div>
-        <h2>No training plans found</h2>
-        <p>Click the refresh button to load your data from the API.</p>
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18.8 6c.4 0 .7.3.7.7v10.7c0 .4-.3.7-.7.7H5.2c-.4 0-.7-.3-.7-.7V6.7c0-.4.3-.7.7-.7h13.6z"/><path d="M9 12v.01"/><path d="M15 12v.01"/><path d="M12 16v.01"/></svg>
+        </div>
+        <h2>No plans found</h2>
+        <p>Sync with the API to see your scheduled marathons.</p>
       </div>
 
       <!-- Plans Grid -->
       <div v-else class="plans-grid">
         <div v-for="plan in plans" :key="plan.id" class="plan-card">
 
-          <!-- Card Header: Marathon Info -->
-          <div class="card-header">
+          <!-- Card Header -->
+          <div class="card-top">
             <div class="marathon-info">
-              <span class="marathon-tag">Marathon</span>
+              <span class="category-tag">Goal Race</span>
               <h3>{{ plan.marathonName || 'Unnamed Marathon' }}</h3>
-              <p class="marathon-meta">📅 {{ formatDate(plan.startDate) }} — {{ formatDate(plan.endDate) }}</p>
+              <div class="date-range">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                {{ formatDate(plan.startDate) }} — {{ formatDate(plan.endDate) }}
+              </div>
             </div>
-            <div :class="['status-badge', plan.status.toLowerCase()]">
+            <div :class="['status-pill', plan.status.toLowerCase()]">
               {{ plan.status }}
             </div>
           </div>
 
-          <!-- Progress Overview -->
-          <div class="progress-section">
-            <div class="progress-stats">
-              <span>Overall Progress</span>
-              <span>{{ calculateProgress(plan.items) }}%</span>
+          <!-- Progress -->
+          <div class="progress-box">
+            <div class="progress-label">
+              <span>Overall Completion</span>
+              <span class="percentage">{{ calculateProgress(plan.items) }}%</span>
             </div>
-            <div class="progress-bar-container">
-              <div class="progress-bar" :style="{ width: calculateProgress(plan.items) + '%' }"></div>
+            <div class="progress-track">
+              <div class="progress-fill" :style="{ width: calculateProgress(plan.items) + '%' }"></div>
             </div>
           </div>
 
-          <!-- Training Items List -->
-          <div class="items-section">
-            <h4>Training Schedule</h4>
-            <div class="items-list">
-              <div v-for="item in plan.items" :key="item.id" class="training-item">
-                <div class="item-date">
+          <!-- Training Items -->
+          <div class="schedule-section">
+            <label>Upcoming Schedule</label>
+            <div class="items-container">
+              <div v-for="item in plan.items" :key="item.id" class="workout-row">
+                <div class="workout-date">
                   <span class="day">{{ getDay(item.date) }}</span>
                   <span class="month">{{ getMonth(item.date) }}</span>
                 </div>
 
-                <div class="item-details">
-                  <div class="item-main">
-                    <span class="distance-target">{{ item.targetDistance || 0 }} km</span>
-                    <span :class="['item-status-dot', item.status.toLowerCase()]"></span>
+                <div class="workout-main">
+                  <div class="workout-title">
+                    <span class="distance">{{ item.targetDistance || 0 }} km</span>
+                    <span :class="['dot', item.status.toLowerCase()]"></span>
                   </div>
-                  <div class="item-sub">
-                    <span v-if="item.actualDistance">Done: {{ item.actualDistance }}km</span>
-                    <span v-else>Pending</span>
-                    <span class="time-meta">⏱️ {{ formatTime(item.targetTime) }}</span>
+                  <div class="workout-meta">
+                    <span v-if="item.actualDistance" class="done">Completed: {{ item.actualDistance }}km</span>
+                    <span v-else>Planned Session</span>
+                    <span class="time">⏱ {{ formatTime(item.targetTime) }}</span>
                   </div>
                 </div>
               </div>
 
-              <div v-if="!plan.items || plan.items.length === 0" class="no-items">
-                No items scheduled yet.
+              <div v-if="!plan.items || plan.items.length === 0" class="empty-items">
+                No sessions generated yet.
               </div>
             </div>
           </div>
 
-          <!-- Card Footer -->
+          <!-- Footer Action -->
           <div class="card-footer">
-            <button class="details-btn">View Full Details</button>
+            <button class="view-btn">
+              Open Full Plan
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -86,9 +96,11 @@
 </template>
 
 <script setup lang="ts">
+import type { TrainingItemListDTO } from '@/types/trainingitem'
+import type { TrainingPlanListDTO } from '@/types/trainingplan'
 import { ref } from 'vue'
 
-const plans = ref<any[]>([])
+const plans = ref<TrainingPlanListDTO[]>([])
 const loading = ref(false)
 
 const fetchPlans = async () => {
@@ -99,7 +111,7 @@ const fetchPlans = async () => {
     const data = await response.json()
 
     const plansWithItems = await Promise.all(
-      data.map(async (plan: any) => {
+      data.map(async (plan: TrainingPlanListDTO) => {
         try {
           const res = await fetch(`http://localhost:8080/trainingitems/${plan.id}/item`)
           const items = res.ok ? await res.json() : []
@@ -117,257 +129,274 @@ const fetchPlans = async () => {
   }
 }
 
-// Helpers
 const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
-
 const getDay = (dateStr: string) => new Date(dateStr).getDate()
 const getMonth = (dateStr: string) => new Date(dateStr).toLocaleString('default', { month: 'short' })
-
 const formatTime = (time: string | null) => time && time !== '00:00:00' ? time.substring(0, 5) : '--:--'
 
-const calculateProgress = (items: any[]) => {
+const calculateProgress = (items: TrainingItemListDTO[]) => {
   if (!items || items.length === 0) return 0
-  const completed = items.filter(i => i.status === 'COMPLETED' || i.actualDistance > 0).length
+  const completed = items.filter(i => i.status === 'COMPLETED' || (i.actualDistance ?? 0) > 0).length
   return Math.round((completed / items.length) * 100)
 }
 </script>
 
 <style scoped>
-/* Modern CSS Reset/Styles */
-.dashboard {
+.dashboard-root {
   min-height: 100vh;
-  background-color: #f0f2f5;
-  color: #1a1a1a;
-  font-family: 'Inter', -apple-system, sans-serif;
-}
-
-.dashboard-header {
-  background: #1e293b;
-  color: white;
-  padding: 1.5rem 0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.highlight {
-  color: #38bdf8;
+  background-color: #0f172a; /* Same as Home */
+  color: #f8fafc;
+  font-family: 'Inter', system-ui, sans-serif;
+  padding: 40px 20px;
 }
 
 .container {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 20px;
+  margin: 0 auto;
 }
 
-/* Button Styles */
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.highlight { color: #22c55e; }
+
+.page-subtitle {
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+/* Refresh Button */
 .refresh-btn {
-  background: #38bdf8;
-  color: #0f172a;
+  background: #22c55e;
+  color: #052e16;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
 }
 
-.refresh-btn:hover {
-  background: #7dd3fc;
-  transform: translateY(-1px);
+.refresh-btn:hover:not(:disabled) {
+  background: #4ade80;
+  transform: translateY(-2px);
 }
 
-/* Grid Layout */
+.refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Grid */
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
 }
 
 /* Plan Card */
 .plan-card {
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
+  transition: border-color 0.3s ease;
 }
 
-.card-header {
-  padding: 1.5rem;
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
+.plan-card:hover { border-color: #22c55e; }
+
+.card-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin-bottom: 24px;
 }
 
-.marathon-tag {
+.category-tag {
   font-size: 0.7rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #64748b;
-  font-weight: 700;
+  color: #22c55e;
+  letter-spacing: 1px;
 }
 
 .marathon-info h3 {
-  margin: 0.25rem 0;
-  font-size: 1.25rem;
-  color: #0f172a;
+  font-size: 1.4rem;
+  margin: 4px 0;
 }
 
-.marathon-meta {
+.date-range {
   font-size: 0.85rem;
-  color: #64748b;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Badges */
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+/* Status Pill */
+.status-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
   text-transform: uppercase;
 }
+.status-pill.active { background: #064e3b; color: #34d399; }
+.status-pill.planned { background: #1e3a8a; color: #93c5fd; }
 
-.status-badge.active { background: #dcfce7; color: #166534; }
-.status-badge.planned { background: #e0f2fe; color: #075985; }
-
-/* Progress Section */
-.progress-section {
-  padding: 1rem 1.5rem;
-  background: #f8fafc;
+/* Progress */
+.progress-box {
+  background: #0f172a;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 24px;
 }
 
-.progress-stats {
+.progress-label {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  color: #94a3b8;
 }
 
-.progress-bar-container {
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
+.percentage { color: #f8fafc; font-weight: 700; }
+
+.progress-track {
+  height: 6px;
+  background: #334155;
+  border-radius: 10px;
   overflow: hidden;
 }
 
-.progress-bar {
+.progress-fill {
   height: 100%;
-  background: #10b981;
-  transition: width 0.5s ease-out;
-}
-
-/* Training Items List */
-.items-section {
-  padding: 1.5rem;
-  flex-grow: 1;
-}
-
-.items-section h4 {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  color: #64748b;
-}
-
-.items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.training-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  background: #fff;
-  border: 1px solid #f1f5f9;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
   border-radius: 10px;
+  transition: width 0.8s ease;
 }
 
-.item-date {
+/* Schedule Section */
+.schedule-section label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.items-container {
+  max-height: 220px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.workout-row {
+  background: #273549;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
   align-items: center;
-  min-width: 40px;
-  line-height: 1;
+  gap: 16px;
 }
 
-.item-date .day { font-weight: 700; font-size: 1.1rem; }
-.item-date .month { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; }
-
-.item-details {
-  flex-grow: 1;
+.workout-date {
+  text-align: center;
+  min-width: 45px;
+  border-right: 1px solid #334155;
+  padding-right: 12px;
 }
 
-.item-main {
+.workout-date .day { display: block; font-size: 1.1rem; font-weight: 800; }
+.workout-date .month { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; }
+
+.workout-main { flex: 1; }
+
+.workout-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.distance-target {
-  font-weight: 600;
-  color: #334155;
-}
+.distance { font-weight: 700; color: #f8fafc; }
 
-.item-sub {
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; }
+.dot.completed { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+
+.workout-meta {
   font-size: 0.75rem;
   color: #94a3b8;
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  margin-top: 2px;
 }
 
-.item-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-.item-status-dot.completed { background: #10b981; box-shadow: 0 0 5px #10b981; }
-.item-status-dot.todo { background: #cbd5e1; }
-
+/* Footer */
 .card-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #f0f0f0;
+  margin-top: auto;
+  padding-top: 24px;
 }
 
-.details-btn {
+.view-btn {
   width: 100%;
-  padding: 0.6rem;
   background: transparent;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  color: #64748b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 12px;
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
-.details-btn:hover {
-  background: #f8fafc;
-  color: #0f172a;
+.view-btn:hover {
+  background: #334155;
+  border-color: #475569;
+}
+
+/* Loader Simple */
+.loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #052e16;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .empty-state {
   text-align: center;
-  padding: 5rem 0;
-  color: #94a3b8;
+  padding: 100px 0;
+  color: #64748b;
 }
 
-.empty-state .icon { font-size: 4rem; margin-bottom: 1rem; }
+.empty-icon { margin-bottom: 20px; opacity: 0.5; }
 </style>

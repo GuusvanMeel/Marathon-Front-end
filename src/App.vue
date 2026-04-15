@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import TrainingPlansView from './views/TrainingPlansView.vue';
+import ToolBar from './components/ToolBar.vue';
 
 </script>
 
 <template>
-<TrainingPlansView></TrainingPlansView>
+<ToolBar/>
+<RouterView/>
 </template>
 

@@ -1,4 +1,4 @@
-interface Marathon {
+export interface MarathonDTO {
   id: string
   name: string
   city: string

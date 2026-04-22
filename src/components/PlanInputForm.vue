@@ -2,7 +2,8 @@
 import { ref, onMounted } from 'vue'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
-const marathons = ref<Marathon[]>([])
+import type { MarathonDTO } from '@/types/marathon'
+const marathons = ref<MarathonDTO[]>([])
 
 onMounted(async () => {
   const res = await fetch('http://localhost:8080/marathons')

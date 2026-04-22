@@ -114,7 +114,10 @@ const fetchPlans = async () => {
       data.map(async (plan: TrainingPlanListDTO) => {
         try {
           const res = await fetch(`http://localhost:8080/trainingitems/${plan.id}/item`)
+
           const items = res.ok ? await res.json() : []
+          console.log(plan.id)
+          console.log(items)
           return { ...plan, items }
         } catch {
           return { ...plan, items: [] }

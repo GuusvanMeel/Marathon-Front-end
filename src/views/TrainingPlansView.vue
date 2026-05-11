@@ -8,7 +8,13 @@
           <p class="page-subtitle">Track your progress and upcoming milestones.</p>
         </div>
         <button @click="fetchPlans" :disabled="loading" class="refresh-btn">
-          <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+            <path d="M8 16H3v5" />
+          </svg>
           <span v-else class="loader"></span>
           {{ loading ? 'Updating...' : 'Refresh Data' }}
         </button>
@@ -17,7 +23,13 @@
       <!-- Empty State -->
       <div v-if="plans.length === 0 && !loading" class="empty-state">
         <div class="empty-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18.8 6c.4 0 .7.3.7.7v10.7c0 .4-.3.7-.7.7H5.2c-.4 0-.7-.3-.7-.7V6.7c0-.4.3-.7.7-.7h13.6z"/><path d="M9 12v.01"/><path d="M15 12v.01"/><path d="M12 16v.01"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.8 6c.4 0 .7.3.7.7v10.7c0 .4-.3.7-.7.7H5.2c-.4 0-.7-.3-.7-.7V6.7c0-.4.3-.7.7-.7h13.6z" />
+            <path d="M9 12v.01" />
+            <path d="M15 12v.01" />
+            <path d="M12 16v.01" />
+          </svg>
         </div>
         <h2>No plans found</h2>
         <p>Sync with the API to see your scheduled marathons.</p>
@@ -33,7 +45,13 @@
               <span class="category-tag">Goal Race</span>
               <h3>{{ plan.marathonName || 'Unnamed Marathon' }}</h3>
               <div class="date-range">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                  <path d="M16 2v4" />
+                  <path d="M8 2v4" />
+                  <path d="M3 10h18" />
+                </svg>
                 {{ formatDate(plan.startDate) }} — {{ formatDate(plan.endDate) }}
               </div>
             </div>
@@ -84,9 +102,16 @@
 
           <!-- Footer Action -->
           <div class="card-footer">
+            <button class="view-btn" @click="createTodayItemForPlan(plan.id)">
+              Create item for today
+            </button>
             <button class="view-btn">
               Open Full Plan
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>
@@ -131,6 +156,24 @@ const fetchPlans = async () => {
     loading.value = false
   }
 }
+const createTodayItemForPlan = async (planId: string) => {
+  try {
+    const response = await fetch(
+      `http://localhost:8080/trainingitems/test-create-today/${planId}`,
+      {
+        method: 'POST',
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to create training item')
+    }
+
+    await fetchPlans()
+  } catch (error) {
+    console.error('Error creating training item:', error)
+  }
+}
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
@@ -149,7 +192,8 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
 <style scoped>
 .dashboard-root {
   min-height: 100vh;
-  background-color: #0f172a; /* Same as Home */
+  background-color: #0f172a;
+  /* Same as Home */
   color: #f8fafc;
   font-family: 'Inter', system-ui, sans-serif;
   padding: 40px 20px;
@@ -174,7 +218,9 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   margin-bottom: 8px;
 }
 
-.highlight { color: #22c55e; }
+.highlight {
+  color: #22c55e;
+}
 
 .page-subtitle {
   color: #94a3b8;
@@ -201,7 +247,10 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   transform: translateY(-2px);
 }
 
-.refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* Grid */
 .plans-grid {
@@ -221,7 +270,9 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   transition: border-color 0.3s ease;
 }
 
-.plan-card:hover { border-color: #22c55e; }
+.plan-card:hover {
+  border-color: #22c55e;
+}
 
 .card-top {
   display: flex;
@@ -259,8 +310,16 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   border-radius: 20px;
   text-transform: uppercase;
 }
-.status-pill.active { background: #064e3b; color: #34d399; }
-.status-pill.planned { background: #1e3a8a; color: #93c5fd; }
+
+.status-pill.active {
+  background: #064e3b;
+  color: #34d399;
+}
+
+.status-pill.planned {
+  background: #1e3a8a;
+  color: #93c5fd;
+}
 
 /* Progress */
 .progress-box {
@@ -278,7 +337,10 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   color: #94a3b8;
 }
 
-.percentage { color: #f8fafc; font-weight: 700; }
+.percentage {
+  color: #f8fafc;
+  font-weight: 700;
+}
 
 .progress-track {
   height: 6px;
@@ -328,10 +390,21 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   padding-right: 12px;
 }
 
-.workout-date .day { display: block; font-size: 1.1rem; font-weight: 800; }
-.workout-date .month { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; }
+.workout-date .day {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
 
-.workout-main { flex: 1; }
+.workout-date .month {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.workout-main {
+  flex: 1;
+}
 
 .workout-title {
   display: flex;
@@ -339,10 +412,22 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   align-items: center;
 }
 
-.distance { font-weight: 700; color: #f8fafc; }
+.distance {
+  font-weight: 700;
+  color: #f8fafc;
+}
 
-.dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; }
-.dot.completed { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #475569;
+}
+
+.dot.completed {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
 
 .workout-meta {
   font-size: 0.75rem;
@@ -356,6 +441,9 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
 .card-footer {
   margin-top: auto;
   padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .view-btn {
@@ -391,8 +479,13 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
 }
 
 @keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -401,5 +494,8 @@ const calculateProgress = (items: TrainingItemListDTO[]) => {
   color: #64748b;
 }
 
-.empty-icon { margin-bottom: 20px; opacity: 0.5; }
+.empty-icon {
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
 </style>

@@ -19,7 +19,7 @@
           {{ loading ? 'Updating...' : 'Refresh Data' }}
         </button>
       </div>
-
+        <PlanInputForm @plan-created="fetchPlans" />
       <!-- Empty State -->
       <div v-if="plans.length === 0 && !loading" class="empty-state">
         <div class="empty-icon">
@@ -123,6 +123,7 @@
 <script setup lang="ts">
 import type { TrainingItemListDTO } from '@/types/trainingitem'
 import type { TrainingPlanListDTO } from '@/types/trainingplan'
+import PlanInputForm from '@/components/PlanInputForm.vue'
 import { ref } from 'vue'
 
 const plans = ref<TrainingPlanListDTO[]>([])

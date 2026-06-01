@@ -132,15 +132,21 @@ const loading = ref(false)
 const fetchPlans = async () => {
   loading.value = true
   try {
-    const response = await fetch('http://localhost:8080/trainingplans')
+    const response = await fetch('http://localhost:8080/trainingplans',{
+      method: "GET",
+      credentials: "include",
+    })
     if (!response.ok) throw new Error('Network response was not ok')
     const data = await response.json()
 
     const plansWithItems = await Promise.all(
       data.map(async (plan: TrainingPlanListDTO) => {
         try {
-          const res = await fetch(`http://localhost:8080/trainingitems/${plan.id}/item`)
-
+          const res = await fetch(`http://localhost:8080/trainingitems/${plan.id}/item`,
+  {
+    credentials: "include",
+  }
+)
           const items = res.ok ? await res.json() : []
           console.log(plan.id)
           console.log(items)
@@ -161,10 +167,11 @@ const createTodayItemForPlan = async (planId: string) => {
   try {
     const response = await fetch(
       `http://localhost:8080/trainingitems/test-create-today/${planId}`,
-      {
-        method: 'POST',
-      }
-    )
+  {
+    method: "POST",
+    credentials: "include",
+  }
+)
 
     if (!response.ok) {
       throw new Error('Failed to create training item')

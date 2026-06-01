@@ -10,7 +10,11 @@ const marathons = ref<MarathonDTO[]>([])
 const loading = ref(false)
 
 onMounted(async () => {
-  const res = await fetch('http://localhost:8080/marathons')
+  const res = await fetch('http://localhost:8080/marathons',
+  {
+
+    credentials: "include",
+  })
   marathons.value = await res.json()
 })
 
@@ -38,7 +42,8 @@ const submit = async () => {
     const res = await fetch("http://localhost:8080/trainingplans", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      credentials:"include",
     })
 
     if (res.ok) {
